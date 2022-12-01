@@ -175,11 +175,18 @@ function LandingPage() {
       userItemsUsedMap[user] = [];
     });
 
+    resultText += "All Items:\n\n";
+
     Object.keys(itemUsersMap).forEach((itemId) => {
       const itemUsers = itemUsersMap[itemId];
       const itemName = itemNameMap[itemId].name;
       const itemPrice = itemNameMap[itemId].price;
       // round to 2 decimal places
+
+      resultText += "○ " + itemName + " - ₹" + itemPrice.toString() + "\n";
+      // add item users to result text
+      resultText += "\t" + itemUsers.join(", ") + "\n";
+
       const individualItemPrice =
         Math.round((itemPrice / itemUsers.length) * 100) / 100;
 
@@ -191,6 +198,9 @@ function LandingPage() {
         });
       });
     });
+
+    resultText += "\n\n";
+    resultText += "Divisions:\n\n";
 
     let totalAmountPaid = 0;
     Object.keys(userItemsUsedMap).forEach((user) => {
