@@ -20,6 +20,7 @@ import {
 } from "../../../services/LocalStorage.service";
 import { useState } from "react";
 import { useEffect } from "react";
+import CopyToClipboard from "react-copy-to-clipboard";
 
 function LandingPage() {
   console.log(getItemNameMapInLocalStorage());
@@ -367,14 +368,12 @@ function LandingPage() {
       <br />
       <p style={{ whiteSpace: "pre" }}>{resultText}</p>
       {resultText === "" ? null : (
-        <button
-          onClick={() => {
-            navigator.clipboard.writeText(resultText);
-            alert("Copied to clipboard");
-          }}
+        <CopyToClipboard
+          text={resultText}
+          onCopy={() => alert("Copied to clipboard")}
         >
-          Copy text
-        </button>
+          <button>Copy to clipboard</button>
+        </CopyToClipboard>
       )}
       <br />
       <br />
