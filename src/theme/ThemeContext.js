@@ -21,7 +21,7 @@ function ThemeContextProvider({ children }) {
 
   useEffect(() => {
     const localTheme = window.localStorage.getItem("theme");
-    localTheme ? setTheme(localTheme) : setTheme("dark");
+    localTheme ? setTheme(localTheme) : setTheme("light");
   }, []);
 
   const themeMode = theme === "light" ? lightTheme : darkTheme;

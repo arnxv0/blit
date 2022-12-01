@@ -6,22 +6,69 @@ import {
 } from "./LandingPage.style";
 import { ThemeContext } from "../../../theme/ThemeContext";
 import ThemeToggleButton from "../../custom/ThemeToggleButton";
+import {
+  getUsersInLocalStorage,
+  updateUsersInLocalStorage,
+  getItemsInLocalStorage,
+  updateItemsInLocalStorage,
+  getItemUsersMapInLocalStorage,
+  updateItemUsersMapInLocalStorage,
+  getItemNameMapInLocalStorage,
+  updateItemNameMapInLocalStorage,
+  getTaxPercentageInLocalStorage,
+  updateTaxPercentageInLocalStorage,
+} from "../../../services/LocalStorage.service";
 import { useState } from "react";
+import { useEffect } from "react";
 
 function LandingPage() {
-  const { theme, toggleTheme } = useContext(ThemeContext);
-  const [users, setUsers] = useState([]);
-  const [newUser, setNewUser] = useState("");
+  console.log(getItemNameMapInLocalStorage());
+  console.log(getItemUsersMapInLocalStorage());
+  console.log(getItemsInLocalStorage());
+  console.log(getUsersInLocalStorage());
+  console.log(getTaxPercentageInLocalStorage());
 
-  const [items, setItems] = useState([]);
+  const { theme, toggleTheme } = useContext(ThemeContext);
+  const [users, setUsers] = useState(getUsersInLocalStorage());
+  const [newUser, setNewUser] = useState("");
+  const [taxPercentage, setTaxPercentage] = useState(
+    getTaxPercentageInLocalStorage()
+  );
+  const [resultText, setResultText] = useState("");
+
+  const [items, setItems] = useState(getItemsInLocalStorage());
   const [newItem, setNewItem] = useState({
     name: "",
     price: 0,
     quantity: 1,
   });
 
-  const [itemUsersMap, setItemUsersMap] = useState({});
-  const [itemNameMap, setItemNameMap] = useState({});
+  const [itemUsersMap, setItemUsersMap] = useState(
+    getItemUsersMapInLocalStorage()
+  );
+  const [itemNameMap, setItemNameMap] = useState(
+    getItemNameMapInLocalStorage()
+  );
+
+  useEffect(() => {
+    updateUsersInLocalStorage(users);
+  }, [users]);
+
+  useEffect(() => {
+    updateItemsInLocalStorage(items);
+  }, [items]);
+
+  useEffect(() => {
+    updateItemUsersMapInLocalStorage(itemUsersMap);
+  }, [itemUsersMap]);
+
+  useEffect(() => {
+    updateItemNameMapInLocalStorage(itemNameMap);
+  }, [itemNameMap]);
+
+  useEffect(() => {
+    updateTaxPercentageInLocalStorage(taxPercentage);
+  }, [taxPercentage]);
 
   function addUser() {
     setUsers((users) => [...users, newUser]);
@@ -97,12 +144,104 @@ function LandingPage() {
     });
   }
 
+  function removeNameFromItem(itemId, user) {
+    setItemUsersMap((itemUsersMap) => {
+      const itemUsers = itemUsersMap[itemId];
+      const newUsers = itemUsers.filter((u) => u !== user);
+      return {
+        ...itemUsersMap,
+        [itemId]: newUsers,
+      };
+    });
+  }
+
+  function calculateData() {
+    let resultText = "";
+    let totalAmount = 0;
+
+    for (let i = 0; i < items.length; i++) {
+      totalAmount += items[i].price;
+    }
+
+    const totalTax = totalAmount * (taxPercentage / 100);
+    // rpund to 2 decimal places
+    const totalAmountWithTax = Math.round((totalAmount + totalTax) * 100) / 100;
+
+    resultText += "Total Amount: ₹" + totalAmountWithTax.toString() + "\n\n";
+
+    const userItemsUsedMap = {};
+    users.forEach((user) => {
+      userItemsUsedMap[user] = [];
+    });
+
+    Object.keys(itemUsersMap).forEach((itemId) => {
+      const itemUsers = itemUsersMap[itemId];
+      const itemName = itemNameMap[itemId].name;
+      const itemPrice = itemNameMap[itemId].price;
+      // round to 2 decimal places
+      const individualItemPrice =
+        Math.round((itemPrice / itemUsers.length) * 100) / 100;
+
+      itemUsers.forEach((user) => {
+        userItemsUsedMap[user].push({
+          id: itemId,
+          name: itemName,
+          price: individualItemPrice,
+        });
+      });
+    });
+
+    let totalAmountPaid = 0;
+    Object.keys(userItemsUsedMap).forEach((user) => {
+      const userItems = userItemsUsedMap[user];
+      if (userItems.length === 0) {
+        return;
+      }
+      let userTotalAmount = userItems.reduce((acc, item) => {
+        return acc + item.price;
+      }, 0);
+
+      // round to 2 decimal places
+
+      let userTax = (userTotalAmount * taxPercentage) / 100;
+      userTotalAmount += userTax;
+      totalAmountPaid += userTotalAmount;
+
+      userTotalAmount = Math.round(userTotalAmount * 100) / 100;
+      userTax = Math.round(userTax * 100) / 100;
+      resultText += "○ " + user + " - ₹" + userTotalAmount + "\n";
+      resultText += "\tTax: ₹" + userTax + "\n";
+      resultText += "\tItems: \n";
+      userItems.forEach((item) => {
+        resultText += "\t ➼ " + item.name + ": ₹" + item.price + "\n";
+      });
+      resultText += "\n";
+    });
+
+    totalAmountPaid = Math.round(totalAmountPaid * 100) / 100;
+    resultText += "" + "Collect amount: ₹" + totalAmountPaid.toString() + "\n";
+    setResultText(resultText);
+  }
+
   return (
     <LandingPageContainer>
       <TitleContainer>
         <Title>Blit</Title>
         <ThemeToggleButton theme={theme} toggleTheme={toggleTheme} />
       </TitleContainer>
+      <br />
+      <br />
+
+      <p>
+        <label>Tax Percentage</label>
+        <input
+          type="number"
+          placeholder="Tax"
+          value={taxPercentage}
+          onChange={(e) => setTaxPercentage(parseInt(e.target.value) || 0)}
+        />
+      </p>
+      <br />
 
       <h3>Users</h3>
       <p>
@@ -124,7 +263,6 @@ function LandingPage() {
       <br />
       <br />
       <br />
-
       <h3>Items</h3>
       <p>
         <input
@@ -142,7 +280,10 @@ function LandingPage() {
           placeholder="Price"
           value={newItem.price}
           onChange={(e) =>
-            setNewItem((newItem) => ({ ...newItem, price: e.target.value }))
+            setNewItem((newItem) => ({
+              ...newItem,
+              price: parseFloat(e.target.value),
+            }))
           }
         />
         <br />
@@ -152,7 +293,10 @@ function LandingPage() {
           placeholder="Quantity"
           value={newItem.quantity}
           onChange={(e) =>
-            setNewItem((newItem) => ({ ...newItem, quantity: e.target.value }))
+            setNewItem((newItem) => ({
+              ...newItem,
+              quantity: parseInt(e.target.value),
+            }))
           }
         />
         <button onClick={addItem}>Add Item</button>
@@ -168,7 +312,6 @@ function LandingPage() {
       <br />
       <br />
       <br />
-
       <h3>Assignment</h3>
       <ol>
         {items.map((item) => (
@@ -199,7 +342,14 @@ function LandingPage() {
                   <td>
                     <ul>
                       {itemUsersMap[item.id].map((user) => (
-                        <li key={item.id + user + "Bleh"}>{user}</li>
+                        <li key={item.id + user + "Bleh"}>
+                          {user}{" "}
+                          <button
+                            onClick={() => removeNameFromItem(item.id, user)}
+                          >
+                            Remove
+                          </button>
+                        </li>
                       ))}
                     </ul>
                   </td>
@@ -211,6 +361,25 @@ function LandingPage() {
           </li>
         ))}
       </ol>
+
+      <button onClick={calculateData}>Calculate</button>
+      <br />
+      <br />
+      <p style={{ whiteSpace: "pre" }}>{resultText}</p>
+      {resultText === "" ? null : (
+        <button
+          onClick={() => {
+            navigator.clipboard.writeText(resultText);
+            alert("Copied to clipboard");
+          }}
+        >
+          Copy text
+        </button>
+      )}
+      <br />
+      <br />
+      <br />
+      <br />
     </LandingPageContainer>
   );
 }
