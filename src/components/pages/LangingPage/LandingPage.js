@@ -21,6 +21,7 @@ import {
 import { useState } from "react";
 import { useEffect } from "react";
 import CopyToClipboard from "react-copy-to-clipboard";
+import GoogleAds from "../../custom/GoogleAds";
 
 function LandingPage() {
   console.log(getItemNameMapInLocalStorage());
@@ -236,6 +237,7 @@ function LandingPage() {
 
   return (
     <LandingPageContainer>
+      <GoogleAds slot="8845192027" />
       <TitleContainer>
         <Title>Blit</Title>
         <ThemeToggleButton theme={theme} toggleTheme={toggleTheme} />
