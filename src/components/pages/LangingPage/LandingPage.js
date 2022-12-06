@@ -17,6 +17,8 @@ import {
   updateItemNameMapInLocalStorage,
   getTaxPercentageInLocalStorage,
   updateTaxPercentageInLocalStorage,
+  getDiscountInLocalStorage,
+  updateDiscountInLocalStorage,
 } from "../../../services/LocalStorage.service";
 import { useState } from "react";
 import { useEffect } from "react";
@@ -24,11 +26,11 @@ import CopyToClipboard from "react-copy-to-clipboard";
 import GoogleAds from "../../custom/GoogleAds";
 
 function LandingPage() {
-  console.log(getItemNameMapInLocalStorage());
-  console.log(getItemUsersMapInLocalStorage());
-  console.log(getItemsInLocalStorage());
-  console.log(getUsersInLocalStorage());
-  console.log(getTaxPercentageInLocalStorage());
+  //   console.log(getItemNameMapInLocalStorage());
+  //   console.log(getItemUsersMapInLocalStorage());
+  //   console.log(getItemsInLocalStorage());
+  //   console.log(getUsersInLocalStorage());
+  //   console.log(getTaxPercentageInLocalStorage());
 
   const { theme, toggleTheme } = useContext(ThemeContext);
   const [users, setUsers] = useState(getUsersInLocalStorage());
@@ -37,6 +39,7 @@ function LandingPage() {
     getTaxPercentageInLocalStorage()
   );
   const [resultText, setResultText] = useState("");
+  const [discount, setDiscount] = useState(getDiscountInLocalStorage());
 
   const [items, setItems] = useState(getItemsInLocalStorage());
   const [newItem, setNewItem] = useState({
@@ -71,6 +74,10 @@ function LandingPage() {
   useEffect(() => {
     updateTaxPercentageInLocalStorage(taxPercentage);
   }, [taxPercentage]);
+
+  useEffect(() => {
+    updateDiscountInLocalStorage(discount);
+  }, [discount]);
 
   function addUser() {
     setUsers((users) => [...users, newUser]);
@@ -165,9 +172,19 @@ function LandingPage() {
       totalAmount += items[i].price;
     }
 
-    const totalTax = totalAmount * (taxPercentage / 100);
+    let totalAmountWoTaxWoDiscount = totalAmount;
+
+    // add discount before tax
+    totalAmount -= discount.beforeTax;
+
     // rpund to 2 decimal places
-    const totalAmountWithTax = Math.round((totalAmount + totalTax) * 100) / 100;
+    const totalTax = totalAmount * (taxPercentage / 100);
+    let totalAmountWithTax = Math.round((totalAmount + totalTax) * 100) / 100;
+
+    let totalAmountWTaxW1Discount = totalAmountWithTax;
+
+    // add discount after tax
+    totalAmountWithTax -= discount.afterTax;
 
     resultText += "Total Amount: ₹" + totalAmountWithTax.toString() + "\n\n";
 
@@ -215,14 +232,34 @@ function LandingPage() {
 
       // round to 2 decimal places
 
+      let userTotalDiscount = 0;
+
+      if (discount.beforeTax > 0) {
+        userTotalAmount -=
+          (userTotalAmount / totalAmountWoTaxWoDiscount) * discount.beforeTax;
+        userTotalDiscount +=
+          (userTotalAmount / totalAmountWoTaxWoDiscount) * discount.beforeTax;
+      }
+
       let userTax = (userTotalAmount * taxPercentage) / 100;
+
       userTotalAmount += userTax;
+
+      if (discount.afterTax > 0) {
+        userTotalAmount -=
+          (userTotalAmount / totalAmountWTaxW1Discount) * discount.afterTax;
+        userTotalDiscount +=
+          (userTotalAmount / totalAmountWTaxW1Discount) * discount.afterTax;
+      }
+
       totalAmountPaid += userTotalAmount;
 
       userTotalAmount = Math.round(userTotalAmount * 100) / 100;
+      userTotalDiscount = Math.round(userTotalDiscount * 100) / 100;
       userTax = Math.round(userTax * 100) / 100;
       resultText += "○ " + user + " - ₹" + userTotalAmount + "\n";
       resultText += "\tTax: ₹" + userTax + "\n";
+      resultText += "\tDiscount: ₹" + userTotalDiscount + "\n";
       resultText += "\tItems: \n";
       userItems.forEach((item) => {
         resultText += "\t ➼ " + item.name + ": ₹" + item.price + "\n";
@@ -244,9 +281,8 @@ function LandingPage() {
       </TitleContainer>
       <br />
       <br />
-
       <p>
-        <label>Tax Percentage</label>
+        <label>Tax Percentage </label>
         <input
           type="number"
           placeholder="Tax"
@@ -254,8 +290,35 @@ function LandingPage() {
           onChange={(e) => setTaxPercentage(parseInt(e.target.value) || 0)}
         />
       </p>
+      <p>
+        <label>Before tax discount (in currency) </label>
+        <input
+          type="number"
+          placeholder="Before tax discount"
+          value={discount.beforeTax}
+          onChange={(e) =>
+            setDiscount((d) => ({
+              ...d,
+              beforeTax: parseInt(e.target.value) || 0,
+            }))
+          }
+        />
+      </p>
+      <p>
+        <label>After tax discount (in currency) </label>
+        <input
+          type="number"
+          placeholder="after tax discount"
+          value={discount.afterTax}
+          onChange={(e) =>
+            setDiscount((d) => ({
+              ...d,
+              afterTax: parseInt(e.target.value) || 0,
+            }))
+          }
+        />
+      </p>
       <br />
-
       <h3>Users</h3>
       <p>
         <input
@@ -374,7 +437,6 @@ function LandingPage() {
           </li>
         ))}
       </ol>
-
       <button onClick={calculateData}>Calculate</button>
       <br />
       <br />

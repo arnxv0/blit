@@ -5,6 +5,7 @@ const ITEMS_KEY = "items";
 const ITEM_USER_MAP_KEY = "itemusermap";
 const ITEM_NAME_MAP_KEY = "itemnamemap";
 const TAX_PERCENTAGE_KEY = "itemtaxpercentage";
+const DISCOUNT_KEY = "discount";
 
 function getUsersInLocalStorage() {
   const users = ls.get(USERS_KEY, { decrypt: true });
@@ -66,6 +67,21 @@ function updateTaxPercentageInLocalStorage(taxPercentage) {
   ls.set(TAX_PERCENTAGE_KEY, JSON.stringify(taxPercentage), { encrypt: true });
 }
 
+function getDiscountInLocalStorage() {
+  const discount = ls.get(DISCOUNT_KEY, { decrypt: true });
+  if (discount) {
+    return JSON.parse(discount);
+  }
+  return {
+    beforeTax: 0,
+    afterTax: 0,
+  };
+}
+
+function updateDiscountInLocalStorage(discount) {
+  ls.set(DISCOUNT_KEY, JSON.stringify(discount), { encrypt: true });
+}
+
 export {
   getUsersInLocalStorage,
   updateUsersInLocalStorage,
@@ -77,4 +93,6 @@ export {
   updateItemNameMapInLocalStorage,
   getTaxPercentageInLocalStorage,
   updateTaxPercentageInLocalStorage,
+  getDiscountInLocalStorage,
+  updateDiscountInLocalStorage,
 };
