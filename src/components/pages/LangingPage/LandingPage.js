@@ -1,11 +1,9 @@
-import React, { useContext } from "react";
+import React from "react";
 import {
   LandingPageContainer,
   Title,
   TitleContainer,
 } from "./LandingPage.style";
-import { ThemeContext } from "../../../theme/ThemeContext";
-import ThemeToggleButton from "../../custom/ThemeToggleButton";
 import {
   getUsersInLocalStorage,
   updateUsersInLocalStorage,
@@ -23,7 +21,7 @@ import {
 import { useState } from "react";
 import { useEffect } from "react";
 import CopyToClipboard from "react-copy-to-clipboard";
-import GoogleAds from "../../custom/GoogleAds";
+import Header from "../../custom/Header";
 
 function LandingPage() {
   //   console.log(getItemNameMapInLocalStorage());
@@ -32,7 +30,6 @@ function LandingPage() {
   //   console.log(getUsersInLocalStorage());
   //   console.log(getTaxPercentageInLocalStorage());
 
-  const { theme, toggleTheme } = useContext(ThemeContext);
   const [users, setUsers] = useState(getUsersInLocalStorage());
   const [newUser, setNewUser] = useState("");
   const [taxPercentage, setTaxPercentage] = useState(
@@ -274,11 +271,7 @@ function LandingPage() {
 
   return (
     <LandingPageContainer>
-      <GoogleAds slot="8845192027" />
-      <TitleContainer>
-        <Title>Blit</Title>
-        <ThemeToggleButton theme={theme} toggleTheme={toggleTheme} />
-      </TitleContainer>
+      <Header />
       <br />
       <br />
       <p>
