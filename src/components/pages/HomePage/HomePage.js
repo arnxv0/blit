@@ -34,6 +34,7 @@ function HomePage() {
             {
               id: id,
               name: name,
+              date: Date.now(),
             },
             ...prev,
           ]);
@@ -45,6 +46,11 @@ function HomePage() {
       if (result.isConfirmed) {
         Swal.fire({
           title: `${result.value} created!`,
+          background: theme.secondaryFontColor,
+          color: theme.fontColorOnSecondary,
+          // green
+          confirmButtonColor: "#00D100",
+          cancelButtonColor: "#d33",
         });
       }
     });
@@ -57,7 +63,7 @@ function HomePage() {
       <BillBoxContainer>
         <BillCard createCard={true} addCard={addBill} />
         {allBills.map((bill) => (
-          <BillCard key={bill.id} id={bill.id} name={bill.name} />
+          <BillCard key={bill.id} details={bill} />
         ))}
       </BillBoxContainer>
     </HomePageContainer>

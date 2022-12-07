@@ -14,11 +14,18 @@ const CardContainer = styled.div`
   align-items: center;
   justify-content: center;
   display: flex;
+  flex-direction: column;
 
   &:hover {
     transform: scale(1.05);
     cursor: pointer;
   }
+`;
+
+const DateText = styled.p`
+  color: ${({ theme }) => theme.fontColorOnSecondary};
+  font-size: 0.8rem;
+  margin: 2px 0 0 0;
 `;
 
 const Title = styled.h1`
@@ -35,12 +42,7 @@ const IconContainer = styled.div`
   line-height: 2rem;
 `;
 
-function BillCard({
-  name = "",
-  id = 0,
-  createCard = false,
-  addCard = () => {},
-}) {
+function BillCard({ details = {}, createCard = false, addCard = () => {} }) {
   if (createCard) {
     return (
       <CardContainer onClick={addCard}>
@@ -51,9 +53,12 @@ function BillCard({
     );
   }
 
+  const dateString = new Date(details.date).toDateString();
+
   return (
     <CardContainer>
-      <Title>{name}</Title>
+      <Title>{details.name}</Title>
+      <DateText>{dateString}</DateText>
     </CardContainer>
   );
 }

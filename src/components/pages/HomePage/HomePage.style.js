@@ -17,10 +17,17 @@ export const TitleContainer = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+
   margin: 0 0;
 `;
 
 export const BillBoxContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
+
+  @media (max-width: 950px) {
+    margin-top: 5%;
+    flex-direction: column;
+    align-items: center;
+  }
 `;
