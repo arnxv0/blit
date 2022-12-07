@@ -1,14 +1,28 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { BillBoxContainer, HomePageContainer, Title } from "./HomePage.style";
 import Header from "../../custom/Header";
 import BillCard from "./BillCard";
 import { useState } from "react";
 import Swal from "sweetalert2";
 import { useTheme } from "styled-components";
+import {
+  getAllBillsInLocalStorage,
+  updateAllBillsInLocalStorage,
+} from "../../../services/LocalStorage.service";
+import { useNavigate } from "react-router-dom";
 
 function HomePage() {
-  const [allBills, setAllBills] = useState([]);
+  const [allBills, setAllBills] = useState(getAllBillsInLocalStorage());
   const theme = useTheme();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    updateAllBillsInLocalStorage(allBills);
+  }, [allBills]);
+
+  function deleteBill(id) {
+    setAllBills((prev) => prev.filter((bill) => bill.id !== id));
+  }
 
   function addBill() {
     const id = Math.random().toString(36).substring(2, 15);
@@ -63,7 +77,11 @@ function HomePage() {
       <BillBoxContainer>
         <BillCard createCard={true} addCard={addBill} />
         {allBills.map((bill) => (
-          <BillCard key={bill.id} details={bill} />
+          <BillCard
+            key={bill.id}
+            details={bill}
+            onClick={() => navigate(`/bill/${bill.id}`)}
+          />
         ))}
       </BillBoxContainer>
     </HomePageContainer>

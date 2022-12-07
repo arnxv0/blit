@@ -7,79 +7,160 @@ const ITEM_NAME_MAP_KEY = "itemnamemap";
 const TAX_PERCENTAGE_KEY = "itemtaxpercentage";
 const DISCOUNT_KEY = "discount";
 
-function getUsersInLocalStorage() {
-  const users = ls.get(USERS_KEY, { decrypt: true });
-  if (users) {
-    return JSON.parse(users);
+const ALL_BILLS_KEY = "allbills";
+
+function getUsersInLocalStorage(billId) {
+  const billData = getBillItemFromLocalStorage(billId);
+
+  if (billData[USERS_KEY]) {
+    return billData[USERS_KEY];
   }
   return [];
 }
 
-function updateUsersInLocalStorage(users) {
-  ls.set(USERS_KEY, JSON.stringify(users), { encrypt: true });
+function updateUsersInLocalStorage(billId, users) {
+  const billData = getBillItemFromLocalStorage(billId);
+  billData[USERS_KEY] = users;
+  updateBillItemInLocalStorage(billId, billData);
 }
 
-function getItemsInLocalStorage() {
-  const items = ls.get(ITEMS_KEY, { decrypt: true });
-  if (items) {
-    return JSON.parse(items);
+function getItemsInLocalStorage(billId) {
+  const billData = getBillItemFromLocalStorage(billId);
+
+  if (billData[ITEMS_KEY]) {
+    return billData[ITEMS_KEY];
   }
   return [];
 }
 
-function updateItemsInLocalStorage(items) {
-  ls.set(ITEMS_KEY, JSON.stringify(items), { encrypt: true });
+function updateItemsInLocalStorage(billId, items) {
+  const billData = getBillItemFromLocalStorage(billId);
+  billData[ITEMS_KEY] = items;
+  updateBillItemInLocalStorage(billId, billData);
 }
 
-function getItemUsersMapInLocalStorage() {
-  const itemUsersMap = ls.get(ITEM_USER_MAP_KEY, { decrypt: true });
-  if (itemUsersMap) {
-    return JSON.parse(itemUsersMap);
+function getItemUsersMapInLocalStorage(billId) {
+  const billData = getBillItemFromLocalStorage(billId);
+
+  if (billData[ITEM_USER_MAP_KEY]) {
+    return billData[ITEM_USER_MAP_KEY];
   }
   return {};
 }
 
-function updateItemUsersMapInLocalStorage(itemUsersMap) {
-  ls.set(ITEM_USER_MAP_KEY, JSON.stringify(itemUsersMap), { encrypt: true });
+function updateItemUsersMapInLocalStorage(billId, itemUsersMap) {
+  const billData = getBillItemFromLocalStorage(billId);
+  billData[ITEM_USER_MAP_KEY] = itemUsersMap;
+  updateBillItemInLocalStorage(billId, billData);
 }
 
-function getItemNameMapInLocalStorage() {
-  const itemNameMap = ls.get(ITEM_NAME_MAP_KEY, { decrypt: true });
-  if (itemNameMap) {
-    return JSON.parse(itemNameMap);
+function getItemNameMapInLocalStorage(billId) {
+  const billData = getBillItemFromLocalStorage(billId);
+
+  if (billData[ITEM_NAME_MAP_KEY]) {
+    return billData[ITEM_NAME_MAP_KEY];
   }
+
   return {};
 }
 
-function updateItemNameMapInLocalStorage(itemNameMap) {
-  ls.set(ITEM_NAME_MAP_KEY, JSON.stringify(itemNameMap), { encrypt: true });
+function updateItemNameMapInLocalStorage(billId, itemNameMap) {
+  const billData = getBillItemFromLocalStorage(billId);
+  billData[ITEM_NAME_MAP_KEY] = itemNameMap;
+  updateBillItemInLocalStorage(billId, billData);
 }
 
-function getTaxPercentageInLocalStorage() {
-  const taxPercentage = ls.get(TAX_PERCENTAGE_KEY, { decrypt: true });
-  if (taxPercentage) {
-    return JSON.parse(taxPercentage);
+function getTaxPercentageInLocalStorage(billId) {
+  const billData = getBillItemFromLocalStorage(billId);
+
+  if (billData[TAX_PERCENTAGE_KEY]) {
+    return billData[TAX_PERCENTAGE_KEY];
   }
+
   return 0;
 }
 
-function updateTaxPercentageInLocalStorage(taxPercentage) {
-  ls.set(TAX_PERCENTAGE_KEY, JSON.stringify(taxPercentage), { encrypt: true });
+function updateTaxPercentageInLocalStorage(billId, taxPercentage) {
+  const billData = getBillItemFromLocalStorage(billId);
+  billData[TAX_PERCENTAGE_KEY] = taxPercentage;
+  updateBillItemInLocalStorage(billId, billData);
 }
 
-function getDiscountInLocalStorage() {
-  const discount = ls.get(DISCOUNT_KEY, { decrypt: true });
-  if (discount) {
-    return JSON.parse(discount);
+function getDiscountInLocalStorage(billId) {
+  const billData = getBillItemFromLocalStorage(billId);
+
+  if (billData[DISCOUNT_KEY]) {
+    return billData[DISCOUNT_KEY];
   }
+
   return {
     beforeTax: 0,
     afterTax: 0,
   };
 }
 
-function updateDiscountInLocalStorage(discount) {
-  ls.set(DISCOUNT_KEY, JSON.stringify(discount), { encrypt: true });
+function updateDiscountInLocalStorage(billId, discount) {
+  const billData = getBillItemFromLocalStorage(billId);
+  billData[DISCOUNT_KEY] = discount;
+  updateBillItemInLocalStorage(billId, billData);
+}
+
+function getAllBillsInLocalStorage(billId) {
+  const allBills = ls.get(ALL_BILLS_KEY, { decrypt: true });
+  if (allBills) {
+    return JSON.parse(allBills);
+  }
+  return [];
+}
+
+function updateAllBillsInLocalStorage(allBills) {
+  ls.set(ALL_BILLS_KEY, JSON.stringify(allBills), { encrypt: true });
+}
+
+function getBillItemFromLocalStorage(billId) {
+  const billItem = ls.get(billId, { decrypt: true });
+  if (billItem) {
+    return JSON.parse(billItem);
+  }
+  return {};
+}
+
+function updateBillItemInLocalStorage(billId, billItem) {
+  ls.set(billId, JSON.stringify(billItem), { encrypt: true });
+}
+
+function localStorageSpace() {
+  var data = "";
+
+  console.log("Current local storage: ");
+
+  for (var key in window.localStorage) {
+    if (window.localStorage.hasOwnProperty(key)) {
+      data += window.localStorage[key];
+      console.log(
+        key +
+          " = " +
+          ((window.localStorage[key].length * 16) / (8 * 1024)).toFixed(2) +
+          " KB"
+      );
+    }
+  }
+
+  console.log(
+    data
+      ? "\n" +
+          "Total space used: " +
+          ((data.length * 16) / (8 * 1024)).toFixed(2) +
+          " KB"
+      : "Empty (0 KB)"
+  );
+  console.log(
+    data
+      ? "Approx. space remaining: " +
+          (5120 - ((data.length * 16) / (8 * 1024)).toFixed(2)) +
+          " KB"
+      : "5 MB"
+  );
 }
 
 export {
@@ -95,4 +176,6 @@ export {
   updateTaxPercentageInLocalStorage,
   getDiscountInLocalStorage,
   updateDiscountInLocalStorage,
+  getAllBillsInLocalStorage,
+  updateAllBillsInLocalStorage,
 };

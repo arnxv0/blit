@@ -42,7 +42,12 @@ const IconContainer = styled.div`
   line-height: 2rem;
 `;
 
-function BillCard({ details = {}, createCard = false, addCard = () => {} }) {
+function BillCard({
+  details = {},
+  createCard = false,
+  addCard = () => {},
+  onClick = () => {},
+}) {
   if (createCard) {
     return (
       <CardContainer onClick={addCard}>
@@ -56,7 +61,7 @@ function BillCard({ details = {}, createCard = false, addCard = () => {} }) {
   const dateString = new Date(details.date).toDateString();
 
   return (
-    <CardContainer>
+    <CardContainer onClick={onClick}>
       <Title>{details.name}</Title>
       <DateText>{dateString}</DateText>
     </CardContainer>
