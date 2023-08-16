@@ -1,5 +1,10 @@
 import React from "react";
-import { BillInfoContainer, Title, TitleContainer } from "./BillInfo.style";
+import {
+  BigButton,
+  BillInfoContainer,
+  Title,
+  TitleContainer,
+} from "./BillInfo.style";
 import {
   getUsersInLocalStorage,
   updateUsersInLocalStorage,
@@ -21,6 +26,12 @@ import CopyToClipboard from "react-copy-to-clipboard";
 import Header from "../../custom/Header";
 import { useNavigate, useParams } from "react-router-dom";
 import NotFoundPage from "../NotFoundPage/NotFoundPage";
+import NumberInput from "./NumberInput";
+import CustomSubHeading from "./CustomSubHeading";
+import AddButton from "./AddButton";
+import UserCard from "./UserCard";
+import ItemCard from "./ItemCard";
+import AssignmentCard from "./AssignmentCard";
 
 function BillInfo() {
   const navigate = useNavigate();
@@ -289,65 +300,78 @@ function BillInfo() {
       <Header />
       <br />
       <br />
-      <p>
-        <label>Tax Percentage </label>
-        <input
-          type="number"
-          placeholder="Tax"
-          value={taxPercentage}
-          onChange={(e) => setTaxPercentage(parseInt(e.target.value) || 0)}
-        />
-      </p>
-      <p>
-        <label>Before tax discount (in currency) </label>
-        <input
-          type="number"
-          placeholder="Before tax discount"
-          value={discount.beforeTax}
-          onChange={(e) =>
-            setDiscount((d) => ({
-              ...d,
-              beforeTax: parseInt(e.target.value) || 0,
-            }))
-          }
-        />
-      </p>
-      <p>
-        <label>After tax discount (in currency) </label>
-        <input
-          type="number"
-          placeholder="after tax discount"
-          value={discount.afterTax}
-          onChange={(e) =>
-            setDiscount((d) => ({
-              ...d,
-              afterTax: parseInt(e.target.value) || 0,
-            }))
-          }
-        />
-      </p>
+
+      <NumberInput
+        label="Tax Percentage"
+        type="number"
+        placeholder="Tax"
+        value={taxPercentage}
+        onChange={(e) => setTaxPercentage(parseInt(e.target.value) || 0)}
+      />
+      <NumberInput
+        label={"Before tax discount (in currency)"}
+        type="number"
+        placeholder="Before tax discount"
+        value={discount.beforeTax}
+        onChange={(e) =>
+          setDiscount((d) => ({
+            ...d,
+            beforeTax: parseInt(e.target.value) || 0,
+          }))
+        }
+      />
+      <NumberInput
+        label={"After tax discount (in currency)"}
+        type="number"
+        placeholder="after tax discount"
+        value={discount.afterTax}
+        onChange={(e) =>
+          setDiscount((d) => ({
+            ...d,
+            afterTax: parseInt(e.target.value) || 0,
+          }))
+        }
+      />
       <br />
-      <h3>Users</h3>
-      <p>
+
+      <CustomSubHeading>Users</CustomSubHeading>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: "20px",
+        }}
+      >
         <input
+          style={{
+            width: "100%",
+            padding: "12px 20px",
+            margin: "0",
+            display: "inline-block",
+            border: "1px solid #ccc",
+            borderRadius: "4px",
+            boxSizing: "border-box",
+          }}
           type="text"
           placeholder="Name"
           value={newUser}
           onChange={(e) => setNewUser(e.target.value)}
         />
-        <button onClick={addUser}>Add User</button>
-      </p>
-      <ul>
+        <AddButton onClick={addUser}>Add User</AddButton>
+      </div>
+      <div>
         {users.map((user) => (
-          <li key={user}>
-            {user} <button onClick={() => removeUser(user)}>Remove</button>
-          </li>
+          <UserCard
+            key={user}
+            removeClick={() => removeUser(user)}
+            name={user}
+          />
         ))}
-      </ul>
+      </div>
       <br />
       <br />
       <br />
-      <h3>Items</h3>
+      <CustomSubHeading>Items</CustomSubHeading>
       <p>
         <input
           type="text"
@@ -383,84 +407,42 @@ function BillInfo() {
             }))
           }
         />
-        <button onClick={addItem}>Add Item</button>
+        <AddButton onClick={addItem}>Add Item</AddButton>
       </p>
-      <ul>
+      <div>
         {items.map((item) => (
-          <li key={item.id}>
-            {item.name} - ₹{item.price} - {item.id} -{" "}
-            <button onClick={() => removeItem(item.id)}>Remove</button>
-          </li>
+          <ItemCard
+            key={item.id}
+            removeClick={() => removeItem(item.id)}
+            item={item}
+          />
         ))}
-      </ul>
+      </div>
       <br />
       <br />
       <br />
-      <h3>Assignment</h3>
-      <ol>
-        {items.map((item) => (
-          <li key={item.id}>
-            <table border="1px solid black" cellPadding="10px">
-              <tbody>
-                <tr>
-                  <td>{item.name}</td>
-                  <td>₹{item.price}</td>
-                  <td>
-                    <select
-                      onChange={(e) => {
-                        itemSelected(item.id, e.target.value);
-                        return;
-                      }}
-                    >
-                      <option>None</option>
-                      {users
-                        .filter((user) => !itemUsersMap[item.id].includes(user))
-                        .map((user) => (
-                          <option key={item.id + user}>{user}</option>
-                        ))}
-                    </select>
-                  </td>
-                  <td>{item.id}</td>
-                </tr>
-                <tr>
-                  <td>
-                    <ul>
-                      {itemUsersMap[item.id].map((user) => (
-                        <li key={item.id + user + "Bleh"}>
-                          {user}{" "}
-                          <button
-                            onClick={() => removeNameFromItem(item.id, user)}
-                          >
-                            Remove
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <br />
-            <br />
-          </li>
-        ))}
-      </ol>
-      <button onClick={calculateData}>Calculate</button>
-      <br />
-      <br />
+      <CustomSubHeading>Assignment</CustomSubHeading>
+      {items.map((item) => (
+        <AssignmentCard
+          key={item.id}
+          item={item}
+          itemSelected={itemSelected}
+          users={users}
+          removeNameFromItem={removeNameFromItem}
+          itemUsersMap={itemUsersMap}
+        />
+      ))}
+      <BigButton onClick={calculateData}>Calculate</BigButton>
+
       <p style={{ whiteSpace: "pre" }}>{resultText}</p>
       {resultText === "" ? null : (
         <CopyToClipboard
           text={resultText}
           onCopy={() => alert("Copied to clipboard")}
         >
-          <button>Copy to clipboard</button>
+          <BigButton>Copy to clipboard</BigButton>
         </CopyToClipboard>
       )}
-      <br />
-      <br />
-      <br />
-      <br />
     </BillInfoContainer>
   );
 }

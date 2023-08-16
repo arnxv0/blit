@@ -33,7 +33,7 @@ function Header() {
 
   return (
     <>
-      <GoogleAds slot="8845192027" />
+      {/* <GoogleAds slot="8845192027" /> */}
       <TitleContainer>
         <Title onClick={() => navigate("/")}>Blit</Title>
         <ThemeToggleButton theme={theme} toggleTheme={toggleTheme} />
